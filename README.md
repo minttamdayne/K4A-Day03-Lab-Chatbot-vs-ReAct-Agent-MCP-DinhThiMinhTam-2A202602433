@@ -41,6 +41,14 @@ cp config/test_cases.example.json config/test_cases.json
 python src/app.py --all
 ```
 
+### Chạy giao diện Streamlit trực quan
+
+```bash
+streamlit run src/streamlit_app.py
+```
+
+Giao diện cung cấp chat tương tác, trạng thái LLM/MCP và Waterfall Trace cho từng lần gọi Tool.
+
 **Kỳ vọng Output màn hình:**
 ```text
 ✅ [MOCK OFFLINE MODE PASS]: Môi trường đã sẵn sàng! 
@@ -109,6 +117,7 @@ Học viên làm bài lần lượt theo đúng luồng 3 bước tinh giản d�
 │   ├── 📄 prompts.py            <-- 🛡️ System Prompts cho Chatbot và ReAct Agent
 │   ├── 📄 providers.py          <-- 🔌 Multi-Provider LLM Adapter (Gemini/OpenAI/Mock)
 │   ├── 📄 app.py                <-- 🚀 MCP Client & Core Agent App ghép nối ReAct Loop & Trace Log
+│   ├── 📄 streamlit_app.py      <-- 🎨 Giao diện Web trực quan cho Agent và Waterfall Trace
 │   └── 📁 ai_levels/            <-- 📚 [REFERENCE ONLY] Code mẫu kiến trúc tham khảo (Không sửa/debug)
 │       └── 📄 README.md         <-- ⚠️ Chú thích mã nguồn tham khảo
 │

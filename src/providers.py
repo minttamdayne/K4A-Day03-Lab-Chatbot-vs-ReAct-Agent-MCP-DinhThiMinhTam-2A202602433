@@ -109,7 +109,9 @@ class GeminiProvider(BaseLLMProvider):
     def generate_with_tools(self, prompt: str, tools_schema: List[Dict[str, Any]], system_prompt: str = "") -> Dict[str, Any]:
         if not self.api_key or self.api_key == "your_gemini_api_key_here":
             print("ℹ️ [Gemini Provider]: Chưa tìm thấy GEMINI_API_KEY hợp lệ. Tự động chuyển sang Mock Offline.")
-            return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            result = MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            result.update({"provider": "GeminiProvider", "model": self.model_name, "fallback_used": True})
+            return result
         
         try:
             from google import genai
@@ -160,7 +162,9 @@ class GeminiProvider(BaseLLMProvider):
 
         except Exception as e:
             print(f"⚠️ [Gemini API Warning]: Không thể kết nối live API ({str(e)}). Tự động fallback về Mock.")
-            return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            result = MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            result.update({"provider": "GeminiProvider", "model": self.model_name, "fallback_used": True})
+            return result
 
 
 class OpenAIProvider(BaseLLMProvider):
@@ -187,7 +191,9 @@ class OpenAIProvider(BaseLLMProvider):
     def generate_with_tools(self, prompt: str, tools_schema: List[Dict[str, Any]], system_prompt: str = "") -> Dict[str, Any]:
         if not self.api_key or self.api_key == "your_openai_api_key_here":
             print("ℹ️ [OpenAI Provider]: Chưa tìm thấy OPENAI_API_KEY hợp lệ. Tự động chuyển sang Mock Offline.")
-            return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            result = MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            result.update({"provider": "OpenAIProvider", "model": self.model_name, "fallback_used": True})
+            return result
 
         try:
             from openai import OpenAI
@@ -236,7 +242,9 @@ class OpenAIProvider(BaseLLMProvider):
                 }
         except Exception as e:
             print(f"⚠️ [OpenAI API Warning]: Không thể kết nối live API ({str(e)}). Tự động fallback về Mock.")
-            return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            result = MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
+            result.update({"provider": "OpenAIProvider", "model": self.model_name, "fallback_used": True})
+            return result
 
 
 def get_llm_provider() -> BaseLLMProvider:

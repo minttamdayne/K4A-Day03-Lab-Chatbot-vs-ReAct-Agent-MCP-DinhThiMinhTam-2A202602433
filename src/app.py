@@ -83,6 +83,11 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
         latency_ms = round((time.time() - step_start_time) * 1000, 2)
         
         thought = llm_response.get("thought", "Đang suy luận...")
+        trace_metadata = {
+            "provider": llm_response.get("provider", provider.__class__.__name__),
+            "model": llm_response.get("model", getattr(provider, "model_name", "unknown")),
+            "fallback_used": llm_response.get("fallback_used", False)
+        }
         print(f"🧠 [Thought]: {thought}")
         
         # Trường hợp 1: LLM quyết định trả lời bằng văn bản trực tiếp
@@ -95,7 +100,8 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
                 "action_type": "FINAL_ANSWER",
                 "thought": thought,
                 "output": final_content,
-                "latency_ms": latency_ms
+                "latency_ms": latency_ms,
+                **trace_metadata
             })
             break
             
@@ -137,8 +143,10 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
                             )
                             trace_logs.append({
                                 "step": step, "query": user_query, "action_type": "TOOL_EXECUTION",
+                                "thought": thought,
                                 "tool_name": tool_name, "arguments": arguments,
-                                "observation": obs_data, "latency_ms": latency_ms
+                                "observation": obs_data, "latency_ms": latency_ms,
+                                **trace_metadata
                             })
                             print("🧠 [Thought]: Sách đủ điều kiện; tiếp tục vòng ReAct để thực hiện gia hạn.")
                             continue
@@ -170,10 +178,12 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
                 "step": step,
                 "query": user_query,
                 "action_type": "TOOL_EXECUTION",
+                "thought": thought,
                 "tool_name": tool_name,
                 "arguments": arguments,
                 "observation": obs_data,
-                "latency_ms": latency_ms
+                "latency_ms": latency_ms,
+                **trace_metadata
             })
             
             # Kết thúc vòng lặp sau khi hoàn tất Observation và xuất Final Answer
@@ -186,7 +196,8 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
                 "action_type": "FINAL_ANSWER",
                 "thought": "Tổng hợp kết quả từ MCP Server thành công.",
                 "output": final_answer,
-                "latency_ms": 10.0
+                "latency_ms": 10.0,
+                **trace_metadata
             })
             break
 
