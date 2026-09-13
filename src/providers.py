@@ -38,6 +38,34 @@ class MockOfflineProvider(BaseLLMProvider):
         prompt_lower = prompt.lower()
         
         # Mô phỏng nhận diện intent gọi Tool
+        if "observation từ get_borrow_record" in prompt_lower and '"renewable": true' in prompt_lower:
+            return {
+                "type": "tool_call",
+                "tool_name": "renew_book_loan",
+                "arguments": {"student_id": "SV202602433", "loan_id": "LN-2433-01"},
+                "thought": "Hồ sơ cho thấy sách đủ điều kiện gia hạn. Tôi sẽ dùng mã lượt mượn để gia hạn."
+            }
+        if "tôi thấy hoa vàng trên cỏ xanh" in prompt_lower:
+            return {
+                "type": "tool_call",
+                "tool_name": "search_catalog",
+                "arguments": {"title": "Tôi thấy hoa vàng trên cỏ xanh"},
+                "thought": "Người dùng cần biết tình trạng và vị trí sách. Tôi sẽ tra cứu danh mục thư viện."
+            }
+        if "sv202602433" in prompt_lower and "gia hạn" in prompt_lower:
+            return {
+                "type": "tool_call",
+                "tool_name": "get_borrow_record",
+                "arguments": {"student_id": "SV202602433"},
+                "thought": "Cần kiểm tra lượt mượn và điều kiện trước khi gia hạn sách."
+            }
+        if "sv20260110" in prompt_lower and "gia hạn" in prompt_lower:
+            return {
+                "type": "tool_call",
+                "tool_name": "get_borrow_record",
+                "arguments": {"student_id": "SV20260110"},
+                "thought": "Cần kiểm tra tình trạng quá hạn và đặt trước trước khi quyết định gia hạn."
+            }
         if "sv2026001" in prompt_lower and "đặt lịch" in prompt_lower:
             return {
                 "type": "tool_call",
@@ -64,7 +92,7 @@ class GeminiProvider(BaseLLMProvider):
     """Google Gemini Provider (Native Tool Calling với Google GenAI SDK)"""
     def __init__(self, api_key: str = None, model: str = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        self.model_name = model or os.getenv("LLM_MODEL") or "gemini-2.5-flash"
+        self.model_name = model or os.getenv("LLM_MODEL") or "gemini-3.6-flash"
 
     def generate(self, prompt: str, system_prompt: str = "") -> str:
         if not self.api_key or self.api_key == "your_gemini_api_key_here":

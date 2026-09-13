@@ -71,6 +71,7 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
     step = 0
     trace_logs = []
     tools_list = mcp_server.list_tools()
+    working_prompt = user_query
     
     while step < MAX_ITERATIONS:
         step += 1
@@ -78,7 +79,7 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
         print(f"\n--- 🔄 Vòng lặp ReAct Loop (Step {step}/{MAX_ITERATIONS}) ---")
         
         # Gọi LLM với Native Tool Calling Specs
-        llm_response = provider.generate_with_tools(user_query, tools_list, system_prompt=REACT_AGENT_SYSTEM_PROMPT)
+        llm_response = provider.generate_with_tools(working_prompt, tools_list, system_prompt=REACT_AGENT_SYSTEM_PROMPT)
         latency_ms = round((time.time() - step_start_time) * 1000, 2)
         
         thought = llm_response.get("thought", "Đang suy luận...")
@@ -119,7 +120,37 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
                 
                 # Tổng hợp Final Answer từ kết quả Observation thực tế
                 if obs_data.get("status") == "SUCCESS":
-                    if "data" in obs_data:
+                    if tool_name == "search_catalog":
+                        d = obs_data["data"]
+                        final_answer = (
+                            f"Sách '{d['title']}' còn {d['available_copies']}/{d['total_copies']} bản, "
+                            f"vị trí: {d['shelf']}."
+                        )
+                    elif tool_name == "get_borrow_record":
+                        loans = obs_data.get("loans", [])
+                        renewable_loan = next((loan for loan in loans if loan.get("renewable")), None)
+                        if "gia hạn" in user_query.lower() and renewable_loan:
+                            working_prompt = (
+                                f"{user_query}\n\nObservation từ get_borrow_record: "
+                                f"{json.dumps(obs_data, ensure_ascii=False)}\n"
+                                "Hãy quyết định hành động tiếp theo. Chỉ gọi renew_book_loan nếu renewable=true."
+                            )
+                            trace_logs.append({
+                                "step": step, "query": user_query, "action_type": "TOOL_EXECUTION",
+                                "tool_name": tool_name, "arguments": arguments,
+                                "observation": obs_data, "latency_ms": latency_ms
+                            })
+                            print("🧠 [Thought]: Sách đủ điều kiện; tiếp tục vòng ReAct để thực hiện gia hạn.")
+                            continue
+                        denied = next((loan for loan in loans if not loan.get("renewable")), None)
+                        if denied:
+                            final_answer = (
+                                f"Không thể gia hạn '{denied['title']}': "
+                                f"{denied.get('renewal_denial_reason', 'không đủ điều kiện gia hạn')}"
+                            )
+                        else:
+                            final_answer = f"Danh sách sách đang mượn: {json.dumps(loans, ensure_ascii=False)}"
+                    elif "data" in obs_data:
                         d = obs_data["data"]
                         final_answer = (
                             f"Kết quả tra cứu cho sinh viên {obs_data.get('student_id', '')} ({d.get('full_name', '')}): "
@@ -131,7 +162,7 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
                     else:
                         final_answer = f"Đã hoàn tất xử lý qua MCP Server: {json.dumps(obs_data, ensure_ascii=False)}"
                 elif obs_data.get("status") == "NOT_FOUND":
-                    final_answer = obs_data.get("message", "Không tìm thấy thông tin sinh viên yêu cầu.")
+                    final_answer = obs_data.get("message", "Không tìm thấy thông tin yêu cầu.")
                 else:
                     final_answer = f"Phản hồi từ công cụ: {json.dumps(obs_data, ensure_ascii=False)}"
             
@@ -201,17 +232,21 @@ if __name__ == "__main__":
         all_traces = []
         
         for tc in tests:
+            test_type = tc.get("type", tc.get("name", "unspecified"))
+            complexity = tc.get("complexity", "N/A")
+            expected_behavior = tc.get("expected_behavior", tc.get("description", "Không có mô tả"))
+            question = tc.get("question", tc.get("query", ""))
             print(f"\n==================================================")
-            print(f"🧪 [{tc['id']}] Loại test: {tc['type']} (Độ phức tạp: {tc['complexity']})")
-            print(f"📌 Kỳ vọng: {tc['expected_behavior']}")
+            print(f"🧪 [{tc['id']}] Loại test: {test_type} (Độ phức tạp: {complexity})")
+            print(f"📌 Kỳ vọng: {expected_behavior}")
             
-            if tc["question"].strip().startswith("TODO"):
+            if question.strip().startswith("TODO"):
                 print(f"⏸️ [CHƯA KÍCH HOẠT - ĐANG LÀ TODO]:")
-                print(f"   {tc['question']}")
+                print(f"   {question}")
                 print(f"   👉 Hãy mở file 'config/test_cases.json' để viết câu hỏi thực tế cho Test Case này!")
                 todo_count += 1
             else:
-                logs = run_react_agent(tc["question"], provider, mcp_server)
+                logs = run_react_agent(question, provider, mcp_server)
                 all_traces.extend(logs)
                 completed_count += 1
                 

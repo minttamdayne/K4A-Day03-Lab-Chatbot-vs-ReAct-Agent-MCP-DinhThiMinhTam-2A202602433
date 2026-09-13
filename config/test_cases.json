@@ -1,0 +1,37 @@
+[
+  {
+    "id": "TC01",
+    "type": "direct_query",
+    "question": "Chào bạn, bạn có thể giới thiệu quy chế học vụ cơ bản của Đại học VinUni không?",
+    "expected_behavior": "Chatbot trả lời trực tiếp từ System Prompt, không cần gọi bất kỳ Tool nào.",
+    "complexity": "Low"
+  },
+  {
+    "id": "TC02",
+    "type": "single_tool_query",
+    "question": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
+    "expected_behavior": "Agent nhận diện nhu cầu tra cứu, tự động phát sinh Tool Call 'academic_query' với mã SV2026001.",
+    "complexity": "Medium"
+  },
+  {
+    "id": "TC03",
+    "name": "Tra cứu vị trí và tình trạng sách trên kệ",
+    "query": "Kiểm tra giúp tôi cuốn 'Tôi thấy hoa vàng trên cỏ xanh' còn bản nào ở thư viện không và nằm ở kệ số mấy?",
+    "expected_tools": ["search_catalog"],
+    "description": "Kiểm tra khả năng bóc tách tên tài liệu, gọi công cụ tra cứu OPAC và trả về chính xác số lượng tồn, số kệ/khu vực lưu trữ."
+  },
+  {
+    "id": "TC04",
+    "name": "Kiểm tra danh sách mượn và gia hạn hợp lệ",
+    "query": "Mã sinh viên của tôi là SV202602433, kiểm tra các sách tôi đang mượn và gia hạn giúp tôi cuốn 'Cho tôi xin một vé về tuổi thơ'.",
+    "expected_tools": ["get_borrow_record", "renew_book_loan"],
+    "description": "Thực hiện chuỗi ReAct 2 bước: lấy danh sách sách đang mượn để đối soát mã mượn -> phát hiện đủ điều kiện -> gọi tiếp tool gia hạn."
+  },
+  {
+    "id": "TC05",
+    "name": "Xử lý ngoại lệ chính sách thư viện (Sách bị giữ hoặc quá hạn)",
+    "query": "Tôi là SV20260110, gia hạn gấp cuốn 'Ngày xưa có một chuyện tình' thêm 1 tuần.",
+    "expected_tools": ["get_borrow_record"],
+    "description": "Kiểm tra khả năng ra quyết định động (Dynamic Decision): sau khi gọi tool kiểm tra thấy sách đã có người khác đặt trước (reserved) hoặc tài khoản quá hạn, Agent phải từ chối gọi tool gia hạn và giải thích lý do từ chối theo nội quy."
+  }
+]
