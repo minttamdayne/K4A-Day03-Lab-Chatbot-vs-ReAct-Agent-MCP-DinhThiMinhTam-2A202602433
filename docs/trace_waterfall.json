@@ -1,10 +1,154 @@
 [
   {
     "step": 1,
-    "query": "thank you",
+    "query": "Chào bạn, bạn có thể giới thiệu quy chế học vụ cơ bản của Đại học VinUni không?",
     "action_type": "FINAL_ANSWER",
     "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool.",
     "output": "[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-    "latency_ms": 554.3
+    "latency_ms": 1103.0
+  },
+  {
+    "step": 1,
+    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "academic_query",
+    "arguments": {
+      "student_id": "SV2026001"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "student_id": "SV2026001",
+      "data": {
+        "full_name": "Nguyễn Văn An",
+        "class": "AI-K4",
+        "gpa": 3.85,
+        "email": "an.nv@vinuni.edu.vn",
+        "status": "Đang học",
+        "advisor": "PGS.TS Nguyễn Văn A"
+      }
+    },
+    "latency_ms": 442.84
+  },
+  {
+    "step": 2,
+    "query": "Hãy tra cứu thông tin học vụ của sinh viên SV2026001.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
+    "output": "Kết quả tra cứu cho sinh viên SV2026001 (Nguyễn Văn An): Lớp AI-K4, GPA: 3.85, Email: an.nv@vinuni.edu.vn, Trạng thái: Đang học, Cố vấn: PGS.TS Nguyễn Văn A.",
+    "latency_ms": 10.0
+  },
+  {
+    "step": 1,
+    "query": "Kiểm tra giúp tôi cuốn 'Tôi thấy hoa vàng trên cỏ xanh' còn bản nào ở thư viện không và nằm ở kệ số mấy?",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "search_catalog",
+    "arguments": {
+      "title": "Tôi thấy hoa vàng trên cỏ xanh"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "data": {
+        "title": "Tôi thấy hoa vàng trên cỏ xanh",
+        "author": "Nguyễn Nhật Ánh",
+        "available_copies": 2,
+        "total_copies": 4,
+        "shelf": "Kệ VHVN-03, Tầng 2"
+      }
+    },
+    "latency_ms": 538.29
+  },
+  {
+    "step": 2,
+    "query": "Kiểm tra giúp tôi cuốn 'Tôi thấy hoa vàng trên cỏ xanh' còn bản nào ở thư viện không và nằm ở kệ số mấy?",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
+    "output": "Sách 'Tôi thấy hoa vàng trên cỏ xanh' còn 2/4 bản, vị trí: Kệ VHVN-03, Tầng 2.",
+    "latency_ms": 10.0
+  },
+  {
+    "step": 1,
+    "query": "Mã sinh viên của tôi là SV202602433, kiểm tra các sách tôi đang mượn và gia hạn giúp tôi cuốn 'Cho tôi xin một vé về tuổi thơ'.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "get_borrow_record",
+    "arguments": {
+      "student_id": "SV202602433"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "student_id": "SV202602433",
+      "loans": [
+        {
+          "loan_id": "LN-2433-01",
+          "title": "Cho tôi xin một vé về tuổi thơ",
+          "due_date": "20/09/2026",
+          "renewal_count": 0,
+          "overdue": false,
+          "reserved_by_another": false,
+          "renewable": true
+        }
+      ]
+    },
+    "latency_ms": 464.51
+  },
+  {
+    "step": 2,
+    "query": "Mã sinh viên của tôi là SV202602433, kiểm tra các sách tôi đang mượn và gia hạn giúp tôi cuốn 'Cho tôi xin một vé về tuổi thơ'.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "renew_book_loan",
+    "arguments": {
+      "student_id": "SV202602433",
+      "loan_id": "LN-2433-01"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "student_id": "SV202602433",
+      "loan_id": "LN-2433-01",
+      "title": "Cho tôi xin một vé về tuổi thơ",
+      "new_due_date": "27/09/2026",
+      "message": "Đã gia hạn 'Cho tôi xin một vé về tuổi thơ' đến ngày 27/09/2026."
+    },
+    "latency_ms": 565.53
+  },
+  {
+    "step": 3,
+    "query": "Mã sinh viên của tôi là SV202602433, kiểm tra các sách tôi đang mượn và gia hạn giúp tôi cuốn 'Cho tôi xin một vé về tuổi thơ'.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
+    "output": "Đã gia hạn 'Cho tôi xin một vé về tuổi thơ' đến ngày 27/09/2026.",
+    "latency_ms": 10.0
+  },
+  {
+    "step": 1,
+    "query": "Tôi là SV20260110, gia hạn gấp cuốn 'Ngày xưa có một chuyện tình' thêm 1 tuần.",
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "get_borrow_record",
+    "arguments": {
+      "student_id": "SV20260110"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "student_id": "SV20260110",
+      "loans": [
+        {
+          "loan_id": "LN-0110-01",
+          "title": "Ngày xưa có một chuyện tình",
+          "due_date": "10/09/2026",
+          "renewal_count": 0,
+          "overdue": true,
+          "reserved_by_another": true,
+          "renewable": false,
+          "renewal_denial_reason": "Sách đã quá hạn và đang được độc giả khác đặt trước."
+        }
+      ]
+    },
+    "latency_ms": 564.38
+  },
+  {
+    "step": 2,
+    "query": "Tôi là SV20260110, gia hạn gấp cuốn 'Ngày xưa có một chuyện tình' thêm 1 tuần.",
+    "action_type": "FINAL_ANSWER",
+    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
+    "output": "Không thể gia hạn 'Ngày xưa có một chuyện tình': Sách đã quá hạn và đang được độc giả khác đặt trước.",
+    "latency_ms": 10.0
   }
 ]

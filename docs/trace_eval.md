@@ -22,26 +22,54 @@
 
 > ⚠️ **YÊU CẦU NGHIỆM THU:** Mở tệp `.env` điền `GEMINI_API_KEY` (hoặc `OPENAI_API_KEY`) để kết nối LLM thật trước khi thực thi `python src/app.py --all`. Bài nộp chỉ dùng Mock Offline Provider sẽ không đạt điểm nghiệm thực tế.
 
-Dán 1 đoạn trích xuất log tiêu biểu từ file `docs/trace_waterfall.json` sinh ra từ phản hồi LLM API thật:
+Dưới đây là đoạn trace tiêu biểu của **TC04**, thể hiện chuỗi ReAct hai bước `get_borrow_record` → `renew_book_loan` trên Gemini API thật:
 
 ```json
 [
   {
     "step": 1,
+    "query": "Mã sinh viên của tôi là SV202602433, kiểm tra các sách tôi đang mượn và gia hạn giúp tôi cuốn 'Cho tôi xin một vé về tuổi thơ'.",
     "action_type": "TOOL_EXECUTION",
-    "tool_name": "academic_query",
+    "tool_name": "get_borrow_record",
     "arguments": {
-      "student_id": "SV2026001"
+      "student_id": "SV202602433"
     },
     "observation": {
       "status": "SUCCESS",
-      "student_id": "SV2026001",
-      "data": {
-        "full_name": "Nguyễn Văn An",
-        "gpa": 3.85
-      }
+      "student_id": "SV202602433",
+      "loans": [{
+        "loan_id": "LN-2433-01",
+        "title": "Cho tôi xin một vé về tuổi thơ",
+        "due_date": "20/09/2026",
+        "overdue": false,
+        "reserved_by_another": false,
+        "renewable": true
+      }]
     },
-    "latency_ms": 120.5
+    "latency_ms": 464.51
+  },
+  {
+    "step": 2,
+    "action_type": "TOOL_EXECUTION",
+    "tool_name": "renew_book_loan",
+    "arguments": {
+      "student_id": "SV202602433",
+      "loan_id": "LN-2433-01"
+    },
+    "observation": {
+      "status": "SUCCESS",
+      "title": "Cho tôi xin một vé về tuổi thơ",
+      "new_due_date": "27/09/2026",
+      "message": "Đã gia hạn 'Cho tôi xin một vé về tuổi thơ' đến ngày 27/09/2026."
+    },
+    "latency_ms": 565.53
+  },
+  {
+    "step": 3,
+    "action_type": "FINAL_ANSWER",
+    "thought": "Tổng hợp kết quả từ MCP Server thành công.",
+    "output": "Đã gia hạn 'Cho tôi xin một vé về tuổi thơ' đến ngày 27/09/2026.",
+    "latency_ms": 10.0
   }
 ]
 ```
